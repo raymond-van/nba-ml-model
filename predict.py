@@ -1,16 +1,10 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
-from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
-from data import X, y, mean_team_stats
-from train import rf
-# from calibration import rf_isotonic, xgb_sigmoid
-# from ensemble import xgb_stack
+from data_unprocessed import X, y, mean_team_stats
+from train import rf, et
 from schedule import games, num_of_games
 from pymongo import MongoClient
-import json
-from pprint import pprint
 
 today_df = pd.DataFrame()
 
@@ -41,27 +35,23 @@ today_df = today_df.reindex_axis(sorted(today_df.columns), axis=1)
 # Model prediction
 rf_prob = rf.predict_proba(today_df)
 rf_prob = rf_prob[:,1]
-
-# rf_iso_prob = rf_isotonic.predict_proba(today_df)
-# rf_prob = rf_iso_prob[:,1]
-# xgb_sigmoid_prob = xgb_sigmoid.predict_proba(today_df)
-# rf_prob = xgb_sigmoid_prob[:,1]
-# xgb_stack_prob = xgb_stack.predict_proba(today_df)
-# print(xgb_stack_prob[:,1])
+et_prob = et.predict_proba(today_df)
+et_prob = et_prob[:,1]
+avg_prob = (rf_prob + et_prob) / 2
 
 # Process predictions for neat display in dataframe
-rf_pred = []
-for prob in rf_prob:
+avg_pred = []
+for prob in avg_prob:
     if prob < .5:
-        rf_pred.append(0)
+        avg_pred.append(0)
     else:
-        rf_pred.append(1)
+        avg_pred.append(1)
 games_data = np.empty((len(games),3))
-games_data[:,0] = rf_pred
-games_data[:,1] = np.around(rf_prob*100,2)
-games_data[:,2] = np.around(norm(0,10.5).ppf(rf_prob),1)    # Convert win probability into point spread
+games_data[:,0] = avg_pred
+games_data[:,1] = np.around(avg_prob*100,2)
+games_data[:,2] = np.around(norm(0,10.5).ppf(avg_prob),1)    # Convert win probability into point spread
 games_str = []
-for game in games:      # turn games list of lists into list of strings for dataframe index
+for game in games:      # turn games list of lists into list of strings for dataframe indexing
     t1 = game[0]
     t2 = game[1]
     teams = t1 + ' at ' + t2
@@ -76,10 +66,8 @@ print(games_df)
 
 # Convert pandas dataframe to JSON
 games_json = games_df.to_dict(orient='index')
-# pprint(games_json)
-# pprint(type(games_json))
 
 # Connect to MongoDB and create database
-client = MongoClient("")
-db = client.nba
-result = db.predictions.insert_one(games_json)
+# client = MongoClient("")
+# db = client.<db>
+# result = db.<collection>.insert_one(games_json)

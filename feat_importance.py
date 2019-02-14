@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from data import X, y, mean_team_stats
+from data_unprocessed import X, y, mean_team_stats
 from train import rf, xgb
 
 importances = rf.feature_importances_

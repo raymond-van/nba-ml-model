@@ -5,7 +5,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.svm import SVC 
 from xgboost import XGBClassifier
-from data import X, y
+from data_unprocessed import X, y
 
 # Train models on full dataset to use for predictions
 rf = RandomForestClassifier(n_estimators=1000,min_samples_leaf=2,min_samples_split=5,max_depth=20)

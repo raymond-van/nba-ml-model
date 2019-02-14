@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
-from data import X, y, mean_team_stats
+from data_unprocessed import X, y, mean_team_stats
 from train import rf, xgb, et, sv, gb
 from calibration import rf_isotonic, xgb_sigmoid, gb_sigmoid, sv_sigmoid, et_isotonic
 from schedule import games, num_of_games
@@ -10,9 +10,7 @@ warnings.filterwarnings("ignore")
 
 today_df = pd.DataFrame()
 
-# Turn games into a dataframe that is in the same format as training data
-# The model makes predictions by comparing the average stats of team_a and team_b
-# Returns the win probability for team_a (road_team)
+# Similar code as predict.py but this is used to compare uncalibrated probabilities vs. calibrated probabilities
 for game in games:
     road_team, home_team = game[0],game[1]
     team_a = mean_team_stats.loc[mean_team_stats['TEAM_NAME'] == road_team]

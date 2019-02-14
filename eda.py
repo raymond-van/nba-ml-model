@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from data import X,y,mean_team_stats
+from data_unprocessed import X,y,mean_team_stats
 import os
 import seaborn as sns
 sns.set()

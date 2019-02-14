@@ -8,11 +8,9 @@ from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
 from sklearn.calibration import CalibratedClassifierCV, calibration_curve
 from sklearn.metrics import brier_score_loss, precision_score, recall_score, f1_score
-from data import X,y
+from data_unprocessed import X,y
 import warnings
 warnings.filterwarnings("ignore")
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=19)
 
 # Base models
 rf = RandomForestClassifier(n_estimators=1000,min_samples_leaf=2,min_samples_split=5,max_depth=20)
@@ -34,62 +32,65 @@ et_isotonic = CalibratedClassifierCV(et, cv=3, method='isotonic')
 et_isotonic.fit(X,y)
 
 # Create reliability plots
-def plot_calibration_curve(est, name, fig_index):
-    """Plot calibration curve for est w/o and with calibration. """
-    # Calibrated with isotonic calibration
-    isotonic = CalibratedClassifierCV(est, cv=3, method='isotonic')
 
-    # Calibrated with sigmoid calibration
-    sigmoid = CalibratedClassifierCV(est, cv=3, method='sigmoid')
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=19)
 
-    fig = plt.figure(fig_index, figsize=(10, 10))
-    ax1 = plt.subplot2grid((3, 1), (0, 0), rowspan=2)
-    ax2 = plt.subplot2grid((3, 1), (2, 0))
+# def plot_calibration_curve(est, name, fig_index):
+#     """Plot calibration curve for est w/o and with calibration. """
+#     # Calibrated with isotonic calibration
+#     isotonic = CalibratedClassifierCV(est, cv=3, method='isotonic')
 
-    ax1.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
-    for clf, name in [(est, name),
-                      (isotonic, name + ' + Isotonic'),
-                      (sigmoid, name + ' + Sigmoid')]:
-        clf.fit(X_train, y_train)
-        y_pred = clf.predict(X_test)
-        if hasattr(clf, "predict_proba"):
-            prob_pos = clf.predict_proba(X_test)[:, 1]
-        else:  # use decision function
-            prob_pos = clf.decision_function(X_test)
-            prob_pos = \
-                (prob_pos - prob_pos.min()) / (prob_pos.max() - prob_pos.min())
+#     # Calibrated with sigmoid calibration
+#     sigmoid = CalibratedClassifierCV(est, cv=3, method='sigmoid')
 
-        clf_score = brier_score_loss(y_test, prob_pos, pos_label=y.max())
-        print("%s:" % name)
-        print("\tBrier: %1.3f" % (clf_score))
-        print("\tPrecision: %1.3f" % precision_score(y_test, y_pred))
-        print("\tRecall: %1.3f" % recall_score(y_test, y_pred))
-        print("\tF1: %1.3f\n" % f1_score(y_test, y_pred))
+#     fig = plt.figure(fig_index, figsize=(10, 10))
+#     ax1 = plt.subplot2grid((3, 1), (0, 0), rowspan=2)
+#     ax2 = plt.subplot2grid((3, 1), (2, 0))
 
-        fraction_of_positives, mean_predicted_value = \
-            calibration_curve(y_test, prob_pos, n_bins=5)
+#     ax1.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
+#     for clf, name in [(est, name),
+#                       (isotonic, name + ' + Isotonic'),
+#                       (sigmoid, name + ' + Sigmoid')]:
+#         clf.fit(X_train, y_train)
+#         y_pred = clf.predict(X_test)
+#         if hasattr(clf, "predict_proba"):
+#             prob_pos = clf.predict_proba(X_test)[:, 1]
+#         else:  # use decision function
+#             prob_pos = clf.decision_function(X_test)
+#             prob_pos = \
+#                 (prob_pos - prob_pos.min()) / (prob_pos.max() - prob_pos.min())
 
-        ax1.plot(mean_predicted_value, fraction_of_positives, "s-",
-                 label="%s (%1.3f)" % (name, clf_score))
+#         clf_score = brier_score_loss(y_test, prob_pos, pos_label=y.max())
+#         print("%s:" % name)
+#         print("\tBrier: %1.3f" % (clf_score))
+#         print("\tPrecision: %1.3f" % precision_score(y_test, y_pred))
+#         print("\tRecall: %1.3f" % recall_score(y_test, y_pred))
+#         print("\tF1: %1.3f\n" % f1_score(y_test, y_pred))
 
-        ax2.hist(prob_pos, range=(0, 1), bins=10, label=name,
-                 histtype="step", lw=2)
+#         fraction_of_positives, mean_predicted_value = \
+#             calibration_curve(y_test, prob_pos, n_bins=5)
 
-    ax1.set_ylabel("Fraction of positives")
-    ax1.set_ylim([-0.05, 1.05])
-    ax1.legend(loc="lower right")
-    ax1.set_title('Calibration plots  (reliability curve)')
+#         ax1.plot(mean_predicted_value, fraction_of_positives, "s-",
+#                  label="%s (%1.3f)" % (name, clf_score))
 
-    ax2.set_xlabel("Mean predicted value")
-    ax2.set_ylabel("Count")
-    ax2.legend(loc="upper center", ncol=2)
+#         ax2.hist(prob_pos, range=(0, 1), bins=10, label=name,
+#                  histtype="step", lw=2)
 
-    plt.tight_layout()
+#     ax1.set_ylabel("Fraction of positives")
+#     ax1.set_ylim([-0.05, 1.05])
+#     ax1.legend(loc="lower right")
+#     ax1.set_title('Calibration plots  (reliability curve)')
 
-plot_calibration_curve(rf, "Random Forest", 1)
-plot_calibration_curve(xgb, "XGB", 2)
-plot_calibration_curve(gb, "Gradient Boosted", 3)
-plot_calibration_curve(sv, "SVC", 4)
-plot_calibration_curve(et, "Extra Trees", 5)
+#     ax2.set_xlabel("Mean predicted value")
+#     ax2.set_ylabel("Count")
+#     ax2.legend(loc="upper center", ncol=2)
 
-plt.show()
+#     plt.tight_layout()
+
+# plot_calibration_curve(rf, "Random Forest", 1)
+# plot_calibration_curve(xgb, "XGB", 2)
+# plot_calibration_curve(gb, "Gradient Boosted", 3)
+# plot_calibration_curve(sv, "SVC", 4)
+# plot_calibration_curve(et, "Extra Trees", 5)
+
+# plt.show()
