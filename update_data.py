@@ -1,3 +1,4 @@
+# DATASET LAST UPDATED AS OF 02/14/19
 #%%
 from nba_py import game
 from nba_py import constants
@@ -9,17 +10,31 @@ import numpy as np
 import pandas as pd
 import os
 pd.set_option('display.max_columns', None)
-# LATEST GAME IN DATA.. ID=0021800847
+
 #%%
-# Get ID of most recent game
-check_id = '0021800735'
-foo = game.Boxscore(check_id)
-foo = foo.team_stats()
-# print(foo)
+# Get ID of most recent game played in the data
+X = pd.read_feather(os.getcwd() + '/data/nba_data.feather')
+dataset_id = X['GAME_IDA'].tail(1).values[0]
+print("LATEST GAME ID IN DATASET BEFORE UPDATING: ", dataset_id)
+
+#%%
+# Get ID of most recent game not in data
+def most_recent(id):
+    foo = game.Boxscore(id)
+    foo = foo.team_stats()
+    recent_id = id
+    while not foo.empty:
+        recent_id = int(recent_id)
+        recent_id += 1
+        recent_id = '00' + str(recent_id)
+        foo = game.Boxscore(recent_id)
+        foo = foo.team_stats()
+    return recent_id
+recent_id = most_recent(dataset_id)
 
 #%%
 # Collect and process data of the latest games played currently not used in the model
-g_id = '0021800736'
+g_id = '00' + str(int(dataset_id) + 1)
 trad = game.Boxscore(g_id)
 trad = trad.team_stats()
 adv = game.BoxscoreAdvanced(g_id)
@@ -39,7 +54,7 @@ summ = game.BoxscoreSummary(g_id)
 hc_df = summ.game_summary()
 hc_df = hc_df[['HOME_TEAM_ID']]
 raw_data = pd.concat([df1,df2,hc_df],axis=1)
-for i in range(21800737,21800848,1):
+for i in range((int(g_id)+1),int(recent_id),1):
     game_id = '00' + str(i)
     trad = game.Boxscore(game_id)
     trad = trad.team_stats()
@@ -64,9 +79,6 @@ for i in range(21800737,21800848,1):
     df = pd.concat([df,summ],axis=1)
     raw_data = pd.concat([raw_data,df],axis=0)
     raw_data.reset_index(drop=True,inplace=True)
-
-#%%
-print(raw_data)
 
 #%%
 # Process raw game data
@@ -121,3 +133,9 @@ team_raw.reset_index(drop=True,inplace=True)
 
 #%%
 team_raw.to_feather(os.getcwd() + '/data/team_raw.feather')
+
+#%%
+X = pd.read_feather(os.getcwd() + '/data/nba_data.feather')
+dataset_id = X['GAME_IDA'].tail(1).values[0]
+print("UPDATE COMPLETE")
+print("LATEST GAME ID IN DATASET AFTER UPDATING: ", dataset_id)
