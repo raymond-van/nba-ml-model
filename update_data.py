@@ -1,4 +1,4 @@
-# DATASET LAST UPDATED AS OF 02/14/19
+# DATASET LAST UPDATED AS OF 02/23/19
 #%%
 from nba_py import game
 from nba_py import constants
@@ -29,7 +29,7 @@ def most_recent(id):
         recent_id = '00' + str(recent_id)
         foo = game.Boxscore(recent_id)
         foo = foo.team_stats()
-    return recent_id
+    return '00' + str(int(recent_id) - 15) # Need to subtract 15 games because todays games are incomplete and will raise an error if included
 recent_id = most_recent(dataset_id)
 
 #%%
