@@ -1,4 +1,4 @@
-# DATASET LAST UPDATED AS OF 02/23/19
+# DATASET LAST UPDATED AS OF 02/28/19
 #%%
 from nba_py import game
 from nba_py import constants
