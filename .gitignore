@@ -3,6 +3,8 @@
 notebooks/
 notes/
 tests/
+nba_py/
+mongo_uri.py
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

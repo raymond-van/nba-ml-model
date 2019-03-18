@@ -5,6 +5,7 @@ from data_unprocessed import X, y, mean_team_stats
 from train import rf, et
 from schedule import games, num_of_games
 from pymongo import MongoClient
+from mongo_uri import URI
 
 today_df = pd.DataFrame()
 
@@ -68,6 +69,6 @@ print(games_df)
 games_json = games_df.to_dict(orient='index')
 
 # Connect to MongoDB and create database
-# client = MongoClient("")
-# db = client.<db>
-# result = db.<collection>.insert_one(games_json)
+client = MongoClient(URI)
+db = client.nba
+result = db.predictions.insert_one(games_json)
